@@ -14,23 +14,41 @@ const links = [
   { href: '/settings', label: 'Settings' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen = false, onClose }) {
   const pathname = usePathname();
 
   return (
-    <aside className="sidebar">
-      <h1>AI WARS Admin</h1>
-      <nav>
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={pathname.startsWith(link.href) ? 'active' : ''}
+    <>
+      <div
+        className={`sidebar-backdrop ${mobileOpen ? 'open' : ''}`}
+        onClick={() => (typeof onClose === 'function' ? onClose() : null)}
+      />
+      <aside className={`sidebar ${mobileOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <h1>AI WARS Admin</h1>
+          <button
+            className="icon-button mobile-only"
+            type="button"
+            onClick={() => (typeof onClose === 'function' ? onClose() : null)}
+            aria-label="Close menu"
+            title="Close"
           >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-    </aside>
+            ✕
+          </button>
+        </div>
+        <nav>
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={pathname.startsWith(link.href) ? 'active' : ''}
+              onClick={() => (typeof onClose === 'function' ? onClose() : null)}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }
