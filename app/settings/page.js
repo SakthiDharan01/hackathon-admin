@@ -14,7 +14,7 @@ export default function SettingsPage() {
 
   const loadMode = async () => {
     try {
-      const data = await apiGet('/event/mode');
+      const data = await apiGet('/admin/event/mode');
       setMode(data.mode || 'registration');
     } catch (err) {
       setWarning('Event mode API unavailable.');
@@ -27,7 +27,7 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     try {
-      await apiPost('/event/mode', { mode });
+      await apiPost('/admin/event/mode', { mode });
       addToast('Event mode updated', 'success');
     } catch (err) {
       addToast(err.message, 'error');
