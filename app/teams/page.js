@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import AppShell from '../../components/AppShell';
 import StatusBadge from '../../components/StatusBadge';
@@ -19,7 +19,7 @@ const NEXT_STATE = {
   project_submission_open: 'project_submitted',
 };
 
-export default function TeamsPage() {
+function TeamsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -145,5 +145,13 @@ export default function TeamsPage() {
         onCancel={() => setConfirm(null)}
       />
     </AppShell>
+  );
+}
+
+export default function TeamsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TeamsContent />
+    </Suspense>
   );
 }
