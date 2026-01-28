@@ -8,6 +8,7 @@ const links = [
   { href: '/teams', label: 'Teams' },
   { href: '/evaluations', label: 'Evaluations' },
   { href: '/announcements', label: 'Announcements' },
+  { href: '/emails', label: 'Emails' },
   { href: '/checkin', label: 'Check-in' },
   { href: '/submissions', label: 'Submissions' },
   { href: '/settings', label: 'Settings' },

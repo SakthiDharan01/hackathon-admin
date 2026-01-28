@@ -36,7 +36,7 @@ export default function DashboardPage() {
 
   const loadEventMode = async () => {
     try {
-      const data = await apiGet('/admin/event/mode');
+      const data = await apiGet('/event/mode');
       setEventMode(data.mode || '—');
     } catch (err) {
       setEventMode('—');
