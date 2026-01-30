@@ -30,6 +30,8 @@ export default function EvaluationsPage() {
 
   usePoll(loadEvaluations, 15000);
 
+  const liveEvalId = (evaluations || []).find((e) => e.status === 'live')?.id || '';
+
   const handleCreate = async () => {
     try {
       if (!form.name.trim()) {
@@ -114,6 +116,8 @@ export default function EvaluationsPage() {
   };
 
   const endEval = async (id) => {
+    const ok = window.confirm('End this evaluation now? This will immediately revert participants to NO LIVE EVALUATION.');
+    if (!ok) return;
     try {
       setBusyId(id);
       await apiPost(`/admin/evaluations/${id}/end`);
@@ -163,7 +167,7 @@ export default function EvaluationsPage() {
               const canEditDuration = isPending || isCompleted;
               const canEditOrder = isPending;
               const canDelete = isPending || isCompleted;
-              const canStart = isPending;
+              const canStart = isPending && (!liveEvalId || liveEvalId === evaluation.id);
               const canEnd = isLive;
 
               return (
@@ -206,7 +210,22 @@ export default function EvaluationsPage() {
                     )}
                   </td>
                   <td>
-                    {isLive ? 'LIVE' : isCompleted ? 'Completed' : 'Pending'}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span>{isLive ? 'LIVE' : isCompleted ? 'Completed' : 'Pending'}</span>
+                      {isLive ? (
+                        <span
+                          style={{
+                            fontSize: 12,
+                            padding: '2px 8px',
+                            borderRadius: 999,
+                            border: '1px solid rgba(255,255,255,0.25)',
+                            background: 'rgba(0, 255, 200, 0.08)',
+                          }}
+                        >
+                          Currently Live
+                        </span>
+                      ) : null}
+                    </div>
                   </td>
                   <td>
                     {isEditing ? (
@@ -218,7 +237,14 @@ export default function EvaluationsPage() {
                       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                         <button className="button" onClick={() => startEdit(evaluation)} disabled={!canEdit || isBusy}>Edit</button>
                         <button className="button danger" onClick={() => deleteEval(evaluation.id)} disabled={!canDelete || isBusy}>Delete</button>
-                        <button className="button" onClick={() => startEval(evaluation.id)} disabled={!canStart || isBusy}>Start</button>
+                        <button
+                          className="button"
+                          onClick={() => startEval(evaluation.id)}
+                          disabled={!canStart || isBusy}
+                          title={!canStart && liveEvalId && liveEvalId !== evaluation.id ? 'Another evaluation is currently live' : ''}
+                        >
+                          Start
+                        </button>
                         <button className="button danger" onClick={() => endEval(evaluation.id)} disabled={!canEnd || isBusy}>End</button>
                       </div>
                     )}
