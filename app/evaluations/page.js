@@ -10,6 +10,8 @@ export default function EvaluationsPage() {
   const { addToast } = useToast();
   const [form, setForm] = useState({ name: '', duration_minutes: 60, order: 1 });
   const [evaluations, setEvaluations] = useState([]);
+  const [readyTeams, setReadyTeams] = useState([]);
+  const [readyLive, setReadyLive] = useState(null);
   const [editingId, setEditingId] = useState('');
   const [editingStatus, setEditingStatus] = useState('');
   const [editDraft, setEditDraft] = useState({ name: '', duration_minutes: 60, order: 1 });
@@ -31,6 +33,33 @@ export default function EvaluationsPage() {
   usePoll(loadEvaluations, 15000);
 
   const liveEvalId = (evaluations || []).find((e) => e.status === 'live')?.id || '';
+
+  const loadReadyTeams = async () => {
+    try {
+      const data = await apiGet('/admin/evaluations/live/ready');
+      setReadyLive(data.live_evaluation || null);
+      setReadyTeams(data.ready_teams || []);
+    } catch (err) {
+      // Keep this panel non-blocking.
+      setReadyLive(null);
+      setReadyTeams([]);
+    }
+  };
+
+  useEffect(() => {
+    // Only poll ready list when something is live.
+    if (!liveEvalId) {
+      setReadyLive(null);
+      setReadyTeams([]);
+      return;
+    }
+    loadReadyTeams();
+  }, [liveEvalId]);
+
+  usePoll(() => {
+    if (!liveEvalId) return;
+    return loadReadyTeams();
+  }, 5000);
 
   const handleCreate = async () => {
     try {
@@ -141,6 +170,51 @@ export default function EvaluationsPage() {
           <button className="button" onClick={handleCreate}>Create</button>
         </div>
       </section>
+
+      {liveEvalId ? (
+        <section className="panel">
+          <div className="panel-header">
+            <h3>Ready Monitor</h3>
+            <button className="button secondary" onClick={loadReadyTeams}>
+              Refresh
+            </button>
+          </div>
+          <div style={{ marginTop: 8, opacity: 0.85 }}>
+            Live: <strong>{readyLive?.name || '—'}</strong> {readyLive?.order ? `(Round ${readyLive.order})` : ''}
+          </div>
+          <div style={{ marginTop: 6, opacity: 0.85 }}>
+            Teams ready: <strong>{readyTeams.length}</strong>
+          </div>
+          <div style={{ marginTop: 12, maxHeight: 260, overflow: 'auto' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Track</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {readyTeams.map((t) => (
+                  <tr key={t.team_id}>
+                    <td>
+                      <div style={{ fontWeight: 700 }}>{t.team_name || t.team_id}</div>
+                      <div style={{ opacity: 0.75, fontSize: 12 }}>{t.team_id}</div>
+                    </td>
+                    <td>{t.preferred_track || '—'}</td>
+                    <td>{t.team_state || '—'}</td>
+                  </tr>
+                ))}
+                {readyTeams.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} style={{ opacity: 0.8 }}>No teams have clicked Ready yet.</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
 
       <section className="panel">
         <h3>Evaluation List</h3>
