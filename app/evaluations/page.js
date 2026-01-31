@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AppShell from '../../components/AppShell';
 import { useToast } from '../../components/ToastProvider';
 import { apiDelete, apiGet, apiPatch, apiPost } from '../../lib/api-client';
 import usePoll from '../../hooks/usePoll';
 
 export default function EvaluationsPage() {
+  const router = useRouter();
   const { addToast } = useToast();
   const [form, setForm] = useState({ name: '', duration_minutes: 60, order: 1 });
   const [evaluations, setEvaluations] = useState([]);
@@ -192,6 +194,7 @@ export default function EvaluationsPage() {
                   <th>Team</th>
                   <th>Track</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,11 +206,19 @@ export default function EvaluationsPage() {
                     </td>
                     <td>{t.preferred_track || '—'}</td>
                     <td>{t.team_state || '—'}</td>
+                    <td>
+                      <button
+                        className="button secondary"
+                        onClick={() => router.push(`/teams/${t.team_id}`)}
+                      >
+                        Open
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {readyTeams.length === 0 ? (
                   <tr>
-                    <td colSpan={3} style={{ opacity: 0.8 }}>No teams have clicked Ready yet.</td>
+                    <td colSpan={4} style={{ opacity: 0.8 }}>No teams have clicked Ready yet.</td>
                   </tr>
                 ) : null}
               </tbody>
